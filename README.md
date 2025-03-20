@@ -197,7 +197,7 @@ function checkCollisions() {
 
 ---
 📌 Mainkan game "Catch the Falling Object" di sini:
-🔗 Klik untuk bermain
+Klik untuk bermain
 
 ✅ **Game ini sudah siap dimainkan dengan kontrol keyboard & mobile!**  
-🔹 **Bisa ditambahkan fitur suara & leaderboard untuk lebih seru!** 🎉
+
