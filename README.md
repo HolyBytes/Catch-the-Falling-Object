@@ -191,4 +191,3 @@ function endGame() {
 🔗 **[Klik untuk bermain](https://holybytes.github.io/Catch-the-Falling-Object/)**  
 
 🎉 **Siap menangkap semua objek & jadi juara?** 🎉  
-Jika ada pertanyaan atau ingin fitur tambahan, silakan beri tahu! 😊🚀
