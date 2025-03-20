@@ -1,36 +1,19 @@
- **Penjelasan Lengkap Game "Catch the Falling Object"**
-Game ini adalah **permainan berbasis web** yang dibuat menggunakan **HTML, CSS, dan JavaScript**. Pemain mengontrol sebuah karakter yang harus **menangkap objek jatuh** seperti buah, koin, dan bintang sambil **menghindari rintangan** seperti bom dan duri. Skor akan bertambah setiap kali menangkap objek yang benar, dan nyawa akan berkurang jika terkena bom atau duri. Permainan akan berakhir jika nyawa habis atau waktu habis dalam **mode tantangan**.
+🎮 **Catch the Falling Object - Game Berbasis Web**
+**Catch the Falling Object** adalah game berbasis web di mana pemain mengontrol karakter untuk menangkap **buah, koin, dan bintang** sambil menghindari **bom dan duri**. Game ini dibuat menggunakan **HTML, CSS, dan JavaScript** serta memiliki **kontrol untuk desktop & perangkat mobile**.  
+
+📌 **Mainkan langsung di sini:**  
+🔗 **[Klik untuk bermain](https://holybytes.github.io/Catch-the-Falling-Object/)**  
 
 ---
 
 ## 🏗 **1. Struktur HTML (Tata Letak Game)**
-File **index2.html** memiliki struktur HTML yang terdiri dari elemen-elemen berikut:
+File ini terdiri dari beberapa elemen penting:
+- **Container utama**: Tempat berlangsungnya permainan.
+- **Karakter pemain (`#player`)**: Dikendalikan oleh pemain.
+- **Objek jatuh**: Seperti buah, koin, bintang, bom, dan duri.
+- **Tombol kontrol**: Untuk navigasi di perangkat mobile.
+- **Overlay (`#overlay`)**: Layar awal dengan tombol **Mulai Permainan** dan **Mode Tantangan**.
 
-### **🔹 Elemen `<head>`**
-Berisi **meta tag, judul halaman, dan link ke Bootstrap** untuk mempercantik tampilan.
-```html
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catch the Falling Object</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-```
-- `meta charset="UTF-8"` → Agar teks dapat mendukung berbagai karakter.
-- `meta viewport` → Memastikan tampilan responsif di berbagai perangkat.
-- `title` → Menampilkan judul **"Catch the Falling Object"** di tab browser.
-- `link` → Menggunakan **Bootstrap 5.3** untuk mendukung tampilan yang lebih modern.
-
----
-
-### **🔹 Elemen `<body>`**
-Bagian utama yang menampilkan elemen-elemen game, seperti:
-- **Container game**
-- **Pemain (karakter)**
-- **Skor, level, nyawa**
-- **Overlay (tampilan awal dan game over)**
-- **Tombol navigasi untuk perangkat mobile**
-  
 ```html
 <body>
     <div class="container">
@@ -55,20 +38,13 @@ Bagian utama yang menampilkan elemen-elemen game, seperti:
     </div>
 </body>
 ```
-📌 **Penjelasan komponen utama:**
-- **`#game-container`** → Area bermain di mana objek jatuh dan pemain bergerak.
-- **`#score-display`** → Menampilkan skor pemain.
-- **`#level-display`** → Menampilkan level permainan.
-- **`#lives-display`** → Menampilkan nyawa dengan simbol ❤️.
-- **`#countdown`** → Menampilkan waktu tersisa dalam **mode tantangan**.
-- **`#player`** → Karakter yang dikontrol oleh pemain.
-- **Tombol kiri/kanan (`#left-button`, `#right-button`)** → Untuk kontrol pada **perangkat mobile**.
-- **Overlay (`#overlay`)** → Layar awal dengan tombol **mulai permainan** dan **mode tantangan**.
-
 ---
 
-## 🎨 **2. Desain Tampilan (CSS)**
-CSS digunakan untuk memperindah tampilan game. Berikut adalah beberapa elemen penting:
+## 🎨 **2. Tampilan & Desain (CSS)**
+Game ini memiliki desain yang **modern & responsif** dengan:
+✔ **Latar belakang gradasi biru-hijau**  
+✔ **Karakter dengan ekspresi wajah lucu**  
+✔ **Efek animasi untuk skor & tabrakan**  
 
 ### **🔹 Latar Belakang & Kontainer**
 ```css
@@ -80,20 +56,14 @@ body {
 }
 #game-container {
     position: relative;
-    width: 100%;
     max-width: 500px;
     height: 600px;
-    margin: 20px auto;
+    margin: auto;
     background-color: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
 }
 ```
-✔ **Latar belakang gradasi biru-hijau**  
-✔ **Kontainer game transparan dengan efek bayangan**
-
----
 
 ### **🔹 Karakter Pemain**
 ```css
@@ -104,14 +74,9 @@ body {
     width: 80px;
     height: 80px;
     background-image: url('data:image/svg+xml;utf8,<svg>...</svg>');
-    background-size: contain;
     transition: left 0.1s ease-out;
 }
 ```
-✔ **Berbentuk lingkaran dengan wajah tersenyum**  
-✔ **Bergerak ke kiri dan kanan dengan transisi halus**
-
----
 
 ### **🔹 Objek Jatuh (Buah, Koin, Bintang, Bom, Duri)**
 ```css
@@ -127,15 +92,16 @@ body {
 .bomb { background-image: url('data:image/svg+xml;utf8,<svg>...</svg>'); }
 .spike { background-image: url('data:image/svg+xml;utf8,<svg>...</svg>'); }
 ```
-✔ **Buah, koin, dan bintang menambah skor**  
-✔ **Bom dan duri mengurangi nyawa**  
-
 ---
 
 ## 🎮 **3. Mekanisme Permainan (JavaScript)**
-JavaScript mengontrol seluruh permainan, termasuk **gerakan pemain, objek jatuh, skor, dan efek animasi**.
+JavaScript mengatur seluruh logika permainan, termasuk:
+- **Gerakan pemain**
+- **Objek jatuh & tabrakan**
+- **Skor, level, dan nyawa**
+- **Efek animasi & suara**
 
-### **🔹 Variabel Penting**
+### **🔹 Variabel Utama**
 ```js
 let score = 0;
 let level = 1;
@@ -144,9 +110,6 @@ let fallingSpeed = 3;
 let spawnRate = 1500;
 let gameRunning = false;
 ```
-✔ **Menyimpan status permainan**  
-
----
 
 ### **🔹 Memulai Permainan**
 ```js
@@ -160,10 +123,6 @@ function startGame() {
     setTimeout(spawnObject, 500);
 }
 ```
-✔ **Menyiapkan skor, nyawa, dan level awal**  
-✔ **Menjalankan loop permainan**
-
----
 
 ### **🔹 Spawn Objek Jatuh**
 ```js
@@ -176,9 +135,6 @@ function spawnObject() {
     gameContainer.appendChild(object);
 }
 ```
-✔ **Menghasilkan objek jatuh secara acak**  
-
----
 
 ### **🔹 Menangani Tabarakan**
 ```js
@@ -192,12 +148,47 @@ function checkCollisions() {
     });
 }
 ```
-✔ **Jika menangkap koin → skor bertambah**  
-✔ **Jika kena bom → nyawa berkurang**  
+
+### **🔹 Mode Tantangan (60 Detik)**
+```js
+function startChallengeMode() {
+    challengeMode = true;
+    challengeTimeLeft = 60;
+    startGame();
+    challengeTimer = setInterval(() => {
+        challengeTimeLeft--;
+        if (challengeTimeLeft <= 0) {
+            clearInterval(challengeTimer);
+            endGame();
+        }
+    }, 1000);
+}
+```
+
+### **🔹 Mengakhiri Permainan**
+```js
+function endGame() {
+    gameRunning = false;
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+    }
+    document.getElementById('overlay').style.display = 'flex';
+    document.getElementById('high-score').textContent = `Skor Tertinggi: ${highScore}`;
+}
+```
 
 ---
-📌 Mainkan game "Catch the Falling Object" di sini:
-Klik untuk bermain
 
-✅ **Game ini sudah siap dimainkan dengan kontrol keyboard & mobile!**  
+## 🔥 **Fitur Unggulan**
+✅ **Gameplay seru dengan tantangan unik**  
+✅ **Desain modern dengan animasi & efek visual**  
+✅ **Mendukung keyboard & layar sentuh (mobile-friendly)**  
+✅ **Mode Tantangan (Challenge Mode) untuk adu skor**  
+✅ **Penyimpanan skor tertinggi dengan `localStorage`**  
 
+📌 **Mainkan game ini di sini:**  
+🔗 **[Klik untuk bermain](https://holybytes.github.io/Catch-the-Falling-Object/)**  
+
+🎉 **Siap menangkap semua objek & jadi juara?** 🎉  
+Jika ada pertanyaan atau ingin fitur tambahan, silakan beri tahu! 😊🚀
