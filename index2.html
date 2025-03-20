@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Falling Object</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #1a2980, #26d0ce);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 600px;
+            margin: 20px auto;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #player {
+            position: absolute;
+            bottom: 20px;
+            left: calc(50% - 40px);
+            width: 80px;
+            height: 80px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23f39c12"/><circle cx="35" cy="40" r="8" fill="%23000"/><circle cx="65" cy="40" r="8" fill="%23000"/><path d="M30 65 Q50 80 70 65" stroke="%23000" stroke-width="5" fill="none"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 10;
+            transition: left 0.1s ease-out;
+        }
+
+        .falling-object {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 5;
+        }
+
+        .fruit {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="60" r="40" fill="%23e74c3c"/><path d="M50 20 Q60 10 70 20 L60 40 Z" fill="%23009245"/></svg>');
+        }
+
+        .coin {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23f1c40f"/><circle cx="50" cy="50" r="35" fill="%23f39c12"/><text x="35" y="65" fill="%23fff" font-size="30">$</text></svg>');
+        }
+
+        .star {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 61,35 90,35 67,55 76,80 50,65 24,80 33,55 10,35 39,35" fill="%23f1c40f"/></svg>');
+        }
+
+        .bomb {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="60" r="40" fill="%23000"/><path d="M50 20 L50 5 M30 30 L20 20 M70 30 L80 20" stroke="%23000" stroke-width="5"/><circle cx="70" cy="25" r="10" fill="%23e74c3c"/></svg>');
+        }
+
+        .spike {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="10,80 30,20 50,80 70,20 90,80" fill="%23800080"/></svg>');
+        }
+
+        #score-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #level-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #lives-display {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #countdown {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .special-effect {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 15;
+            animation: expand 0.5s ease-out;
+            opacity: 0;
+        }
+
+        @keyframes expand {
+            0% {
+                transform: scale(0.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .points-popup {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: float-up 1s ease-out;
+            z-index: 20;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        #overlay h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #overlay p {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .control-button {
+            position: absolute;
+            bottom: 20px;
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            user-select: none;
+        }
+
+        #left-button {
+            left: 20px;
+        }
+
+        #right-button {
+            right: 20px;
+        }
+
+        @media (max-width: 576px) {
+            #game-container {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="game-container">
+            <div id="score-display">Skor: 0</div>
+            <div id="level-display">Level: 1</div>
+            <div id="lives-display">❤️❤️❤️</div>
+            <div id="countdown"></div>
+            <div id="player"></div>
+            
+            <div id="left-button" class="control-button d-md-none">←</div>
+            <div id="right-button" class="control-button d-md-none">→</div>
+            
+            <div id="overlay">
+                <h2>Catch the Falling Object</h2>
+                <p>Tangkap buah, koin, dan bintang<br>Hindari bom dan duri!</p>
+                <div class="mb-3">
+                    <button id="start-button" class="btn btn-success btn-lg">Mulai Permainan</button>
+                </div>
+                <div class="mb-3">
+                    <button id="challenge-button" class="btn btn-warning btn-lg">Mode Tantangan</button>
+                </div>
+                <div id="high-score" class="mb-3 text-center">Skor Tertinggi: 0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variabel game
+        let player;
+        let gameContainer;
+        let score = 0;
+        let level = 1;
+        let lives = 3;
+        let fallingSpeed = 3;
+        let spawnRate = 1500;
+        let gameRunning = false;
+        let lastFrame = 0;
+        let objects = [];
+        let playerSpeed = 10;
+        let playerPosition = 50;
+        let containerWidth;
+        let playerWidth;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let challengeMode = false;
+        let challengeTimeLeft = 60;
+        let challengeTimer;
+
+        // Suara game (simulasi)
+        const playCatchSound = () => {
+            // Implementasi sesungguhnya akan menggunakan Audio API
+            console.log("Catch sound played");
+        };
+
+        const playExplosionSound = () => {
+            console.log("Explosion sound played");
+        };
+
+        const playLevelUpSound = () => {
+            console.log("Level up sound played");
+        };
+
+        // Inisialisasi game
+        window.onload = function() {
+            player = document.getElementById('player');
+            gameContainer = document.getElementById('game-container');
+            containerWidth = gameContainer.offsetWidth;
+            playerWidth = player.offsetWidth;
+            
+            document.getElementById('start-button').addEventListener('click', startGame);
+            document.getElementById('challenge-button').addEventListener('click', startChallengeMode);
+            document.getElementById('high-score').textContent = `Skor Tertinggi: ${highScore}`;
+            
+            // Event listener untuk kontrol keyboard
+            window.addEventListener('keydown', handleKeyPress);
+            
+            // Event listener untuk kontrol sentuh pada perangkat mobile
+            document.getElementById('left-button').addEventListener('touchstart', moveLeft);
+            document.getElementById('right-button').addEventListener('touchstart', moveRight);
+            document.getElementById('left-button').addEventListener('mousedown', moveLeft);
+            document.getElementById('right-button').addEventListener('mousedown', moveRight);
+        };
+
+        function startGame() {
+            // Reset variabel game
+            score = 0;
+            level = 1;
+            lives = 3;
+            fallingSpeed = 3;
+            spawnRate = 1500;
+            objects = [];
+            challengeMode = false;
+            updateScore();
+            updateLevel();
+            updateLives();
+            
+            // Hapus overlay
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('countdown').style.display = 'none';
+            
+            // Mulai game loop
+            gameRunning = true;
+            lastFrame = performance.now();
+            requestAnimationFrame(gameLoop);
+            
+            // Mulai spawning objek
+            setTimeout(spawnObject, Math.random() * 1000 + 500);
+        }
+
+        function startChallengeMode() {
+            challengeMode = true;
+            challengeTimeLeft = 60;
+            document.getElementById('countdown').style.display = 'block';
+            updateCountdown();
+            
+            startGame();
+            
+            // Mulai timer mode tantangan
+            challengeTimer = setInterval(() => {
+                challengeTimeLeft--;
+                updateCountdown();
+                
+                if (challengeTimeLeft <= 0) {
+                    clearInterval(challengeTimer);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function updateCountdown() {
+            document.getElementById('countdown').textContent = `Waktu: ${challengeTimeLeft}`;
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+            
+            // Hitung delta waktu
+            const deltaTime = timestamp - lastFrame;
+            lastFrame = timestamp;
+            
+            // Update posisi semua objek yang jatuh
+            updateObjects(deltaTime);
+            
+            // Cek tabrakan dengan pemain
+            checkCollisions();
+            
+            // Lanjutkan game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnObject() {
+            if (!gameRunning) return;
+            
+            // Pilih tipe objek secara acak
+            const objectTypes = ['fruit', 'coin', 'star', 'bomb', 'spike'];
+            const weights = [0.3, 0.3, 0.2, 0.1, 0.1]; // Peluang untuk setiap tipe objek
+            
+            // Gunakan weighted random selection
+            let random = Math.random();
+            let typeIndex = 0;
+            let sum = weights[0];
+            
+            while (random > sum && typeIndex < weights.length - 1) {
+                typeIndex++;
+                sum += weights[typeIndex];
+            }
+            
+            const objectType = objectTypes[typeIndex];
+            
+            // Buat elemen objek
+            const object = document.createElement('div');
+            object.classList.add('falling-object');
+            object.classList.add(objectType);
+            
+            // Set posisi awal objek (acak di sepanjang sumbu x)
+            const objectWidth = 50; // Lebar objek
+            const randomX = Math.random() * (containerWidth - objectWidth);
+            object.style.left = `${randomX}px`;
+            object.style.top = '0px';
+            
+            // Tambahkan tipe objek ke data objek
+            object.dataset.type = objectType;
+            
+            // Tambahkan objek ke container game
+            gameContainer.appendChild(object);
+            
+            // Tambahkan objek ke array objects
+            objects.push({
+                element: object,
+                x: randomX,
+                y: 0,
+                type: objectType,
+                width: objectWidth,
+                height: 50 // Tinggi objek
+            });
+            
+            // Jadwalkan spawn objek berikutnya
+            const nextSpawnTime = challengeMode ? Math.random() * 500 + 300 : Math.random() * spawnRate + spawnRate / 2;
+            setTimeout(spawnObject, nextSpawnTime);
+        }
+
+        function updateObjects(deltaTime) {
+            // Pindahkan semua objek ke bawah
+            const speedFactor = deltaTime / 16; // Normalkan kecepatan berdasarkan 60 FPS
+            
+            for (let i = objects.length - 1; i >= 0; i--) {
+                const object = objects[i];
+                
+                // Update posisi Y
+                object.y += fallingSpeed * speedFactor;
+                object.element.style.top = `${object.y}px`;
+                
+                // Hapus objek yang keluar dari layar
+                if (object.y > gameContainer.offsetHeight) {
+                    // Jika objek yang baik tidak tertangkap, kurangi skor
+                    if (['fruit', 'coin', 'star'].includes(object.type)) {
+                        if (score > 0) score -= 1;
+                        updateScore();
+                    }
+                    
+                    gameContainer.removeChild(object.element);
+                    objects.splice(i, 1);
+                }
+            }
+        }
+
+        function checkCollisions() {
+            const playerRect = player.getBoundingClientRect();
+            const containerRect = gameContainer.getBoundingClientRect();
+            
+            // Ubah koordinat relatif terhadap container
+            const playerLeft = playerRect.left - containerRect.left;
+            const playerRight = playerRect.right - containerRect.left;
+            const playerTop = playerRect.top - containerRect.top;
+            const playerBottom = playerRect.bottom - containerRect.top;
+            
+            for (let i = objects.length - 1; i >= 0; i--) {
+                const object = objects[i];
+                const objectLeft = object.x;
+                const objectRight = object.x + object.width;
+                const objectTop = object.y;
+                const objectBottom = object.y + object.height;
+                
+                // Cek tabrakan dengan pemain
+                if (
+                    objectRight > playerLeft &&
+                    objectLeft < playerRight &&
+                    objectBottom > playerTop &&
+                    objectTop < playerBottom
+                ) {
+                    // Tangani tabrakan
+                    handleCollision(object);
+                    
+                    // Hapus objek
+                    gameContainer.removeChild(object.element);
+                    objects.splice(i, 1);
+                }
+            }
+        }
+
+        function handleCollision(object) {
+            // Tambahkan efek tabrakan
+            const effect = document.createElement('div');
+            effect.classList.add('special-effect');
+            effect.style.left = `${object.x}px`;
+            effect.style.top = `${object.y}px`;
+            
+            // Points popup
+            const pointsPopup = document.createElement('div');
+            pointsPopup.classList.add('points-popup');
+            pointsPopup.style.left = `${object.x + object.width / 2}px`;
+            pointsPopup.style.top = `${object.y}px`;
+            
+            // Logic berdasarkan tipe objek
+            switch (object.type) {
+                case 'fruit':
+                    effect.style.backgroundColor = 'rgba(231, 76, 60, 0.5)';
+                    pointsPopup.textContent = '+10';
+                    pointsPopup.style.color = '#e74c3c';
+                    score += 10;
+                    playCatchSound();
+                    break;
+                case 'coin':
+                    effect.style.backgroundColor = 'rgba(241, 196, 15, 0.5)';
+                    pointsPopup.textContent = '+15';
+                    pointsPopup.style.color = '#f1c40f';
+                    score += 15;
+                    playCatchSound();
+                    break;
+                case 'star':
+                    effect.style.backgroundColor = 'rgba(241, 196, 15, 0.5)';
+                    pointsPopup.textContent = '+25';
+                    pointsPopup.style.color = '#f1c40f';
+                    score += 25;
+                    playCatchSound();
+                    break;
+                case 'bomb':
+                    effect.style.backgroundColor = 'rgba(231, 76, 60, 0.5)';
+                    pointsPopup.textContent = '-1 ❤️';
+                    pointsPopup.style.color = '#e74c3c';
+                    lives--;
+                    playExplosionSound();
+                    break;
+                case 'spike':
+                    effect.style.backgroundColor = 'rgba(142, 68, 173, 0.5)';
+                    pointsPopup.textContent = '-1 ❤️';
+                    pointsPopup.style.color = '#8e44ad';
+                    lives--;
+                    playExplosionSound();
+                    break;
+            }
+            
+            // Tambahkan efek ke game container
+            gameContainer.appendChild(effect);
+            gameContainer.appendChild(pointsPopup);
+            
+            // Hapus efek setelah animasi selesai
+            setTimeout(() => {
+                if (gameContainer.contains(effect)) {
+                    gameContainer.removeChild(effect);
+                }
+                if (gameContainer.contains(pointsPopup)) {
+                    gameContainer.removeChild(pointsPopup);
+                }
+            }, 1000);
+            
+            // Update skor dan cek level
+            updateScore();
+            checkLevel();
+            updateLives();
+            
+            // Cek kondisi game over
+            if (lives <= 0) {
+                endGame();
+            }
+        }
+
+        function checkLevel() {
+            // Naik level setiap 100 poin
+            const newLevel = Math.floor(score / 100) + 1;
+            
+            if (newLevel > level) {
+                level = newLevel;
+                updateLevel();
+                
+                // Tingkatkan kesulitan
+                fallingSpeed += 0.5;
+                spawnRate = Math.max(300, spawnRate - 100);
+                
+                // Efek level up
+                playLevelUpSound();
+                
+                // Animasi level up
+                const levelDisplay = document.getElementById('level-display');
+                levelDisplay.style.fontSize = '32px';
+                levelDisplay.style.color = '#f1c40f';
+                
+                setTimeout(() => {
+                    levelDisplay.style.fontSize = '24px';
+                    levelDisplay.style.color = 'white';
+                }, 1000);
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score-display').textContent = `Skor: ${score}`;
+        }
+
+        function updateLevel() {
+            document.getElementById('level-display').textContent = `Level: ${level}`;
+        }
+
+        function updateLives() {
+            document.getElementById('lives-display').textContent = '❤️'.repeat(lives);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            
+            // Bersihkan challenge timer jika aktif
+            if (challengeTimer) {
+                clearInterval(challengeTimer);
+            }
+            
+            // Update high score jika perlu
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('highScore', highScore);
+            }
+            
+            // Tampilkan overlay game over
+            const overlay = document.getElementById('overlay');
+            overlay.style.display = 'flex';
+            
+            // Update teks
+            overlay.querySelector('h2').textContent = 'Game Over!';
+            overlay.querySelector('p').textContent = `Skor Akhir: ${score}`;
+            document.getElementById('high-score').textContent = `Skor Tertinggi: ${highScore}`;
+            
+            // Bersihkan objek yang tersisa
+            objects.forEach(object => {
+                if (gameContainer.contains(object.element)) {
+                    gameContainer.removeChild(object.element);
+                }
+            });
+            objects = [];
+        }
+
+        function handleKeyPress(e) {
+            if (!gameRunning) return;
+            
+            switch (e.key) {
+                case 'ArrowLeft':
+                    moveLeft();
+                    break;
+                case 'ArrowRight':
+                    moveRight();
+                    break;
+            }
+        }
+
+        function moveLeft() {
+            if (!gameRunning) return;
+            
+            playerPosition = Math.max(0, playerPosition - playerSpeed);
+            player.style.left = `${playerPosition}%`;
+        }
+
+        function moveRight() {
+            if (!gameRunning) return;
+            
+            playerPosition = Math.min(100 - (playerWidth / containerWidth) * 100, playerPosition + playerSpeed);
+            player.style.left = `${playerPosition}%`;
+        }
+    </script>
+</body>
+</html> 
